@@ -25,7 +25,7 @@ class SanDiegoPythonBot(irc.bot.SingleServerIRCBot):
     def __init__(self, server='irc.freenode.net', port=6667):
         self.nick = 'SDPythonBot'
         self.channel = '#sandiegopython'
-        self.known_nicks = [irc.strings.lower(self.nick)]
+        self.known_nicks = set([irc.strings.lower(self.nick)])
         irc.bot.SingleServerIRCBot.__init__(self, [(server, port)], self.nick, self.nick)
 
     def on_nicknameinuse(self, connection, event):
@@ -48,6 +48,7 @@ class SanDiegoPythonBot(irc.bot.SingleServerIRCBot):
 
         if nick not in self.known_nicks:
             self.do_welcome(connection, nick)
+            self.known_nicks.add(nick)
 
     def do_welcome(self, connection, nick):
         logger.info(u'Sending welcome message to {}'.format(nick))
