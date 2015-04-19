@@ -51,7 +51,7 @@ class SanDiegoPythonBot(irc.bot.SingleServerIRCBot):
 
     def do_welcome(self, connection, nick):
         logger.info(u'Sending welcome message to {}'.format(nick))
-        connection.privmsg(self.channel, u'{}: Check out our Meetup page for upcoming events: {}'.format(nick, self.MEETUP_PAGE))
+        connection.privmsg(self.channel, u'{}: Check out our Meetup page for upcoming events: {}. Please be respectful of our members. See our code of conduct: http://pythonsd.org/pages/code-of-conduct.html'.format(nick, self.MEETUP_PAGE))
 
     def do_command(self, event, cmd):
         nick = event.source.nick
