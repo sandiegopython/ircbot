@@ -64,16 +64,6 @@ class SanDiegoPythonBot(irc.bot.SingleServerIRCBot):
             c.privmsg(self.channel, u"Don't tempt me")
         elif cmd == "import this":
             c.privmsg(self.channel, u"Don't get me started on The Zen of Python. I can talk for days.")
-        elif cmd == "stats":
-            for chname, chobj in self.channels.items():
-                c.notice(nick, "--- Channel statistics ---")
-                c.notice(nick, "Channel: " + chname)
-                users = sorted(chobj.users())
-                c.notice(nick, "Users: " + ", ".join(users))
-                opers = sorted(chobj.opers())
-                c.notice(nick, "Opers: " + ", ".join(opers))
-                voiced = sorted(chobj.voiced())
-                c.notice(nick, "Voiced: " + ", ".join(voiced))
         else:
             c.notice(nick, "Not understood: " + cmd)
 
