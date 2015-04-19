@@ -58,7 +58,9 @@ class SanDiegoPythonBot(irc.bot.SingleServerIRCBot):
         c = self.connection
         logger.debug(u'Received command {} from {}'.format(cmd, nick))
 
-        if cmd == "welcome":
+        if cmd == "help":
+            c.privmsg(self.channel, u"I'm a bot. My source code is here: https://github.com/pythonsd/ircbot. You're welcome to send a pull request to change my behavior.")
+        elif cmd == "welcome":
             self.do_welcome(c, nick)
         elif cmd.startswith('kick'):
             c.privmsg(self.channel, u"Don't tempt me")
