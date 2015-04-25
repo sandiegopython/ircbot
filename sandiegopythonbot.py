@@ -12,8 +12,14 @@ The known commands are:
 """
 
 import logging
+import datetime
+
 import irc.bot
 import irc.strings
+import pytz
+
+
+TZ = pytz.timezone('America/Los_Angeles')
 
 
 logger = logging.getLogger('SDPythonBot')
@@ -26,10 +32,12 @@ class SanDiegoPythonBot(irc.bot.SingleServerIRCBot):
         self.nick = 'SDPythonBot'
         self.channel = '#sandiegopython'
         self.known_nicks = set([irc.strings.lower(self.nick)])
+        self.slackers = set(['jimkrooskos', 'sonicrocketman'])
         irc.bot.SingleServerIRCBot.__init__(self, [(server, port)], self.nick, self.nick)
 
     def on_nicknameinuse(self, connection, event):
         connection.nick(connection.get_nickname() + "_")
+
 
     def on_welcome(self, connection, event):
         connection.join(self.channel)
@@ -41,7 +49,8 @@ class SanDiegoPythonBot(irc.bot.SingleServerIRCBot):
         a = event.arguments[0].split(":", 1)
         if len(a) > 1 and irc.strings.lower(a[0]) == irc.strings.lower(self.connection.get_nickname()):
             self.do_command(event, a[1].strip())
-        return
+        elif self.is_slacker(event.source.nick, event.arguments[0]):
+            self.greet_slacker(connection, event.source.nick)
 
     def on_join(self, connection, event):
         nick = irc.strings.lower(event.source.nick)
@@ -67,8 +76,27 @@ class SanDiegoPythonBot(irc.bot.SingleServerIRCBot):
             c.privmsg(self.channel, u"Don't tempt me")
         elif cmd == "import this":
             c.privmsg(self.channel, u"Don't get me started on The Zen of Python. I can talk for days.")
+        elif cmd.startswith("addslacker "):
+            new_slackers = cmd.split(' ', 1)[1:]
+            for nick in new_slackers:
+                self.slackers.add(nick)
+            c.privmsg(self.channel, u'Added to slackers: {}'.format(u', '.join(new_slackers)))
+        elif cmd.startswith("removeslacker "):
+            old_slackers = cmd.split(' ', 1)[1:]
+            for nick in old_slackers:
+                self.slackers.remove(nick)
+            c.privmsg(self.channel, u'Removed from slackers: {}'.format(u', '.join(old_slackers)))
         else:
             c.notice(nick, "Not understood: " + cmd)
+
+    def is_slacker(self, nick, message):
+        now = datetime.datetime.now(tz=TZ)
+        if now.hour < 9 or now.hour > 12:
+            return False
+        return nick in self.slackers and 'mornin' in message.lower()
+
+    def greet_slacker(self, connection, nick):
+        connection.privmsg(self.channel, '{nick}: Morning slacker.'.format(nick=nick))
 
 
 def main():
@@ -88,12 +116,19 @@ def main():
         default=6667,
         help='Port for the IRC server [6667]',
     )
+    parser.add_argument(
+        '--channel',
+        dest='channel',
+        default='#sandiegopython',
+        help='Channel to connect to [#sandiegopython]',
+    )
 
     args = parser.parse_args()
 
     logging.basicConfig(format='[%(asctime)s]: %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
     bot = SanDiegoPythonBot(server=args.server, port=args.port)
+    bot.channel = args.channel
     bot.start()
 
 if __name__ == "__main__":
